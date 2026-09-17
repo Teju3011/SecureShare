@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: secureshare-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: secureshare_db
+      POSTGRES_USER: secureshare
+      POSTGRES_PASSWORD: secureshare_db_password_2026!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secureshare -d secureshare_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: secureshare-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: secureshare_minio_user
+      MINIO_ROOT_PASSWORD: secureshare_minio_secret_password
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  clamav:
+    image: clamav/clamav:latest
+    container_name: secureshare-clamav
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: secureshare-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - SECRET_KEY=production-super-secret-jwt-key-min-32-chars-long!
+      - FILE_ENCRYPTION_KEY_HEX=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      - DATABASE_URL=postgresql://secureshare:secureshare_db_password_2026!@postgres:5432/secureshare_db
+      - STORAGE_PROVIDER=minio
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=secureshare_minio_user
+      - MINIO_SECRET_KEY=secureshare_minio_secret_password
+      - MINIO_CLEAN_BUCKET=secureshare-clean
+      - MINIO_QUARANTINE_BUCKET=secureshare-quarantine
+      - MINIO_SECURE=False
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - CLAMAV_MODE=smart
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: secureshare-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  minio_data:

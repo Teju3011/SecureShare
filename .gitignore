@@ -1,0 +1,84 @@
+# ==============================================================================
+# SECURESHARE - Root .gitignore
+# Stack: Python FastAPI, React TypeScript Vite, SQLite/PostgreSQL, Storage
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+*/venv/
+*/.venv/
+
+# Node.js & Frontend build artifacts
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.npm/
+package-lock.json.bak
+
+# Database files & Local storage
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+backend/*.db
+backend/secureshare.db
+backend/test_secureshare.db
+
+# Storage / Upload payloads & Quarantine
+storage_data/
+backend/storage_data/
+backend/test_storage_data/
+test_storage_data/
+uploads/
+quarantine/
+
+# Sensitive Environment Configurations & Private Keys
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+*.pem
+*.key
+*.cert
+
+# Testing & Coverage caches
+.pytest_cache/
+backend/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+
+# Vite / Build / Lint caches
+.eslintcache
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS-generated files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
