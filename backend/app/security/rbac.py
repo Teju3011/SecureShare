@@ -66,3 +66,24 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
             detail="Access forbidden: Administrator privileges required."
         )
     return current_user
+
+
+async def require_auditor(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [UserRole.ADMIN, UserRole.SECURITY_AUDITOR]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: Security Auditor or Administrator privileges required."
+        )
+    return current_user
+
+
+def require_roles(allowed_roles: list[UserRole]):
+    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access forbidden: Insufficient privileges."
+            )
+        return current_user
+    return role_checker
+

@@ -1,182 +1,219 @@
-# SECURESHARE
-### Secure File Sharing Platform with Automated Security Validation
-**Software Engineering + Cybersecurity Capstone Project**
+# SECURESHARE — Secure File Sharing with Continuous Security Validation
+### College Cybersecurity & Software Engineering Capstone Project
+**Engineered in Strict Conformance with IEEE 29148 Standard for Requirements Engineering**
 
 ---
 
-## 🛡️ Project Overview
+## 🛡️ Executive Summary
 
-**SECURESHARE** is an enterprise-grade, zero-trust secure file sharing web platform that enforces automated multi-stage security validation on every uploaded file before permitting storage, download, or external distribution. It bridges software engineering best practices with core cyber defense principles:
-
-- **Zero-Trust Security Enforcement**: Files are strictly isolated and never downloadable or shareable before achieving an explicit, validated `CLEAN` verdict.
-- **Fail-Closed Malware Scanning**: Integrated ClamAV daemon inspection with an automated EICAR antivirus test harness. If scanner daemons are unreachable, files fail closed (`BLOCKED`/`FAILED`) and are never marked clean.
-- **MIME & Magic-Byte Discrepancy Detection**: Deep binary inspection validates actual file headers against declared MIME types and extensions, catching MIME spoofing and disguised executables.
-- **Dangerous Content Elimination**: Automated heuristics intercept Windows PE (`MZ`), Linux ELF, macOS Mach-O binaries, shell scripts, Windows batch files, PowerShell payloads, and macro-enabled documents (`.docm`, `.xlsm`, embedded VBA projects).
-- **AES-256-GCM Storage Encryption**: All payloads are authenticated and encrypted at rest with unique 96-bit nonces before entering segregated `clean/` or `quarantine/` partitions.
-- **Tamper-Evident Hash Chain Audit Trail**: Every authentication, upload, scan, quarantine, and download action is recorded into a cryptographically chained ledger where `entry_hash = SHA-256(previous_hash + payload)` with built-in mathematical tamper detection.
-- **SOC Security Dashboard & DevSecOps Gate**: Real-time telemetry, threat charts, user role governance, quarantine management, and CI/CD security gate enforcement (blocking deployments on Critical SAST/SCA/DAST findings).
+**SecureShare** is an enterprise-grade cloud-native web platform that allows users to securely upload, organize, download, and share confidential documents while the platform continuously defends against cyber threats. Every uploaded file undergoes a deterministic **6-stage threat inspection pipeline** before entering **AES-256-GCM envelope encryption** at rest. All application actions are cryptographically sealed into an **immutable SHA-256 blockchain audit ledger** with automated tamper detection. The application's own software lifecycle is guarded by an automated **14-stage DevSecOps CI/CD security gate** incorporating SAST, SCA, Secret Scanning, DAST, and fuzz testing.
 
 ---
 
-## 📋 Requirements Traceability Matrix
+## ⚡ 1-Click Demo Quick Start (Windows)
 
-| Requirement | Description | Implementation Status | Core Module |
-|---|---|---|---|
-| **FR-01** | Authentication & MFA | ✅ Fully Implemented | `app/security/password.py`, `jwt.py`, `totp.py` |
-| **FR-02** | Role-Based Access Control (RBAC) | ✅ Fully Implemented | `app/security/rbac.py`, `app/api/deps.py` |
-| **FR-03** | File Upload (Max 50MB, SHA-256) | ✅ Fully Implemented | `app/scanners/pipeline.py`, `validator.py` |
-| **FR-04** | MIME & Signature Validation | ✅ Fully Implemented | `app/scanners/validator.py` |
-| **FR-05** | Automated Malware Scanning | ✅ Fully Implemented | `app/scanners/clamav.py` |
-| **FR-06** | Dangerous Script & Binary Detection | ✅ Fully Implemented | `app/scanners/dangerous_file.py` |
-| **FR-07** | Quarantine & Admin Release/Purge | ✅ Fully Implemented | `app/storage/`, `app/api/v1/admin.py` |
-| **FR-08** | Expiring Password-Protected Shares | ✅ Fully Implemented | `app/services/share_service.py`, `shares.py` |
-| **FR-09** | AES-256-GCM Encryption at Rest | ✅ Fully Implemented | `app/security/encryption.py` |
-| **FR-10** | Tamper-Evident Audit Logging | ✅ Fully Implemented | `app/audit/logger.py`, `verifier.py` |
-| **FR-11** | CI/CD DevSecOps & Security Gate | ✅ Fully Implemented | `.github/workflows/`, `scripts/run_security_pipeline.py` |
-| **FR-12** | SOC Security Dashboard & Telemetry | ✅ Fully Implemented | `app/api/v1/admin.py`, `frontend/src/pages/admin/` |
+The repository includes pre-configured automation scripts to launch the complete stack with seeded demo data in under 10 seconds:
 
----
+```cmd
+:: 1. Start backend, frontend, seed database, and open live presentation dashboard:
+START_DEMO.bat
 
-## 🎯 Use Case Walkthroughs (SRS UC-1 to UC-7)
+:: 2. Stop running backend and frontend services:
+STOP_DEMO.bat
 
-- **UC-1: Register & Login with MFA**
-  Users register with strong password policy requirements (8+ chars, uppercase, lowercase, digit, symbol). Optional TOTP MFA setup presents a QR code and verifies 6-digit authenticator codes.
-- **UC-2: Upload File through 6-Stage Security Pipeline**
-  Users drop files up to 50 MB into the drag-and-drop zone. The real-time pipeline executes: Uploading -> Validating Size & Hash -> Checking Magic Bytes -> Dangerous Content Filter -> Antivirus/ClamAV -> AES-256-GCM Encryption.
-- **UC-3: Share File Securely**
-  Users configure expiration periods (1h to 7 days), optional access passwords (Argon2/bcrypt hashed), and download limits (e.g. burn-after-single-download). The server stores only a SHA-256 hash of the random share token.
-- **UC-4: Download Shared File**
-  Recipients open `/share/<token>`, view public metadata without exposing file contents, enter password if challenged, and stream decrypted file. Counter increments and download limit is strictly enforced.
-- **UC-5: Review Quarantined Files**
-  Administrators inspect isolated threats in the Quarantine Center, review scanner findings, and execute audited release or permanent purge.
-- **UC-6: Trigger DevSecOps Security Scan**
-  Administrators trigger CI/CD pipeline scans. If Critical findings occur (SAST/SCA/DAST), the automated Security Gate blocks deployment.
-- **UC-7: View SOC Security Dashboard**
-  Administrators monitor real-time threat telemetry, upload vs malware trends, severity breakdowns, user privileges, and audit hash chain integrity.
+:: 3. Reset database and storage partitions to pristine clean state:
+RESET_DEMO.bat
+```
+
+### Direct Service URLs
+- **Live Presentation & Metrics Dashboard**: [http://localhost:5173/demo](http://localhost:5173/demo)
+- **Web Application Portal**: [http://localhost:5173](http://localhost:5173)
+- **Interactive OpenAPI / Swagger Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Admin SOC Command Center**: [http://localhost:5173/admin](http://localhost:5173/admin)
 
 ---
 
-## 🏗️ Architecture & Security Data Flow
+## 👥 Evaluation Personas & Demo Accounts
+
+All pre-seeded accounts use the universal demonstration password: `Pass123!Secure`
+
+| Persona Name | Email Address | System Role | Primary Responsibilities & Review Focus |
+| :--- | :--- | :--- | :--- |
+| **Sushmitha Reddy** | `sushmitha@example.com` | `USER` | **Product Owner & Security Lead**: Uploads, file organization, share link generation. |
+| **Rahul Kumar** | `rahul@example.com` | `USER` | **Cryptography & Backend Engineer**: File encryption, streaming decrypt, access control. |
+| **Priya Sharma** | `priya@example.com` | `USER` | **DevSecOps & QA Lead**: 6-stage malware scanner, CI/CD pipeline, security testing. |
+| **Arjun Rao** | `arjun@example.com` | `USER` | **UI/UX & Frontend Engineer**: Glassmorphism UI, permissions modal, activity view. |
+| **System Admin** | `admin@example.com` | `ADMIN` | **SOC Operations**: Quarantine isolation center, purge malware, live telemetry. |
+| **Security Auditor** | `auditor@example.com` | `SECURITY_AUDITOR` | **Compliance Officer**: SHA-256 blockchain audit verification, governance reports. |
+
+---
+
+## 📋 Requirements Traceability Matrix (IEEE 29148)
+
+### Functional Requirements (FR-01 to FR-13)
+- **FR-01**: User Registration with Argon2id memory-hard hashing (`m=64MB, t=3, p=4`) & password complexity policy.
+- **FR-02**: JWT session authentication with 60-minute lifetime and sliding window refresh tokens.
+- **FR-03**: RFC 6238 Time-based One-Time Password (TOTP) Multi-Factor Authentication with QR setup.
+- **FR-04**: Direct multi-format file upload with 50MB ceiling and MIME verification.
+- **FR-05**: Automated 6-stage malware, macro, and entropy threat scanning engine.
+- **FR-06**: File quarantine isolation air-gap preventing download of suspicious/infected files.
+- **FR-07**: Envelope encryption using AES-256-GCM authenticated cipher with 96-bit unique IVs.
+- **FR-08**: Authorized decryption-on-the-fly streaming download with zero temporary disk files.
+- **FR-09**: Hierarchical folder management with strict BOLA (Broken Object Level Authorization) guards.
+- **FR-10**: Granular user-to-user permission sharing (`VIEWER`, `DOWNLOADER`, `EDITOR`, `CO_OWNER`).
+- **FR-11**: Expiring public share links with optional Argon2id passwords and max download limits.
+- **FR-12**: Tamper-evident SHA-256 blockchain audit logging with continuous verifier API.
+- **FR-13**: Real-time SOC Administrator and Auditor Security Dashboard with live attack telemetry.
+
+### Security Requirements (SR-01 to SR-15)
+- **SR-01**: BOLA / IDOR protection through relational database ownership join queries.
+- **SR-02**: Zero plaintext credentials or cryptographic keys stored in persistent database.
+- **SR-03**: Strict Content-Security-Policy (`CSP`), anti-clickjacking (`X-Frame-Options: DENY`), and `HSTS`.
+- **SR-04**: Sliding-window IP and account rate limiting (5 req/min on auth, 60 req/min on API).
+- **SR-05**: Immutable audit log ledger detecting row deletions, insertions, or alterations.
+- **SR-06**: Automatic 15-minute account lockout after 5 consecutive failed login attempts.
+- **SR-07**: Complete file quarantine air-gap (quarantined files return HTTP 403 Forbidden).
+- **SR-08**: Strict Role-Based Access Control (`ADMIN`, `SECURITY_AUDITOR`, `USER`).
+- **SR-09**: Automated SAST and secret scanning quality gate in CI/CD pipeline.
+- **SR-10**: Containerized microservice sandboxing executing under non-root UID 10001.
+- **SR-11**: Deep magic-byte MIME detection independent of user-supplied file extensions.
+- **SR-12**: Cryptographic IV randomization (`os.urandom(12)`) guaranteeing zero IV reuse.
+- **SR-13**: Secure public share link password hashing with unique salts.
+- **SR-14**: OWASP ZAP automated baseline DAST vulnerability scanning compliance.
+- **SR-15**: High fuzzing resistance against 500+ malformed input vectors with zero unhandled crashes.
+
+---
+
+## 🔍 The 6-Stage Upload Threat Scanner Engine
 
 ```
-   Uploaded File
-         │
-         ▼
+Uploaded File Byte Stream
+      │
+      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. Size & SHA-256 Hash Check (< 50 MB)                      │
-└────────────────┬────────────────────────────────────────────┘
-                 ▼
+│ Stage 1: File Size Ceiling Check (< 50 MB hard limit)       │
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. MIME & Magic-Byte Signature Inspection                   │
-│    (Detects spoofed extensions & mismatched headers)        │
-└────────────────┬────────────────────────────────────────────┘
-                 ▼
+│ Stage 2: Deep MIME & Magic Byte Inspection (libmagic)       │
+│          Catches disguised executables and extension spoofing│
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. Dangerous File & Script Filter                           │
-│    (PE/MZ, ELF, Mach-O, .bat, .ps1, .sh, VBA macros)        │
-└────────────────┬────────────────────────────────────────────┘
-                 ▼
+│ Stage 3: Executable Binary & Script Header Filter           │
+│          Blocks PE (MZ), ELF, Mach-O, .bat, .ps1, .sh, VBA   │
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 4. Antivirus & Malware Engine (ClamAV + EICAR Test Harness) │
-│    (Fail-Closed: ClamAV offline keeps file blocked)         │
-└────────────────┬────────────────────────────────────────────┘
-                 ▼
-          Security Decision
-         ┌───────┴───────┐
-         ▼               ▼
-      [CLEAN]      [MALICIOUS / HIGH-RISK]
-         │               │
-         ▼               ▼
-  AES-256 Encrypt  AES-256 Encrypt
-         │               │
-         ▼               ▼
-  storage/clean/   storage/quarantine/
-  (Available)      (Download Blocked)
-         │               │
-         └───────┬───────┘
-                 ▼
-   Tamper-Evident SHA-256 Audit Log
-   entry_hash = HASH(prev_hash + event)
+│ Stage 4: Archive Ratio & Zip Bomb Detection Engine          │
+│          Inspects uncompressed size & nested archive levels │
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Stage 5: ClamAV Daemon Antivirus Signature Scanner          │
+│          Detects trojans, viruses, worms & EICAR test string│
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Stage 6: Shannon Byte Entropy Analysis Engine               │
+│          Calculates byte randomness to detect packed trojans│
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
+                      Security Decision
+                     ┌────────┴────────┐
+                     ▼                 ▼
+                  [CLEAN]         [INFECTED]
+                     │                 │
+                     ▼                 ▼
+              AES-256-GCM       Quarantine Vault
+            Envelope Encrypt    (/storage/quarantine)
+                     │                 │
+                     ▼                 ▼
+              /storage/uploads    Download Air-Gap
+             (Ready for access)   (HTTP 403 Forbidden)
 ```
 
 ---
 
-## 🔑 Pre-Seeded Demo Accounts
+## 🔄 14-Stage DevSecOps CI/CD Pipeline
 
-The database comes pre-seeded with realistic demonstration accounts:
+The GitHub Actions workflow (`.github/workflows/secure-pipeline.yml`) executes 14 automated security gates:
 
-| Role | Email | Password | Access Privileges |
-|---|---|---|---|
-| **Admin (SOC)** | `admin@secureshare.io` | `Admin@SecureShare2026!` | Full SOC Dashboard, Quarantine, Audit Verification, User RBAC |
-| **Standard User** | `alice@example.com` | `User@SecureShare2026!` | File upload, downloads, personal shares, personal activity |
-| **Standard User** | `bob@example.com` | `User@SecureShare2026!` | Uploads, personal shares |
-
-*Tip: The UI features 1-click quick login buttons on the sign-in screen for instant grading and evaluation.*
+1. **Code Linting & Formatting**: Flake8 & Black code quality enforcement.
+2. **Backend Unit & Integration Tests**: Pytest core test suites.
+3. **Security Mitigation Tests**: 11 dedicated security suites (BOLA, Crypto, Auth, RBAC).
+4. **Malformed Input Fuzzing**: 500+ malformed payloads tested against endpoints.
+5. **SAST (Bandit)**: Python static security analysis (SARIF output).
+6. **SAST (Semgrep)**: OWASP Top 10 and security-audit rule scanning.
+7. **Secret Scanning (TruffleHog)**: High-entropy credential and private key detection.
+8. **SCA Backend (pip-audit & Safety)**: Python dependencies CVE vulnerability audit.
+9. **SCA Frontend (npm audit)**: Node.js dependency vulnerability scan.
+10. **Frontend Build & TypeCheck**: React 18 TypeScript compilation check.
+11. **Container Security (Trivy)**: Docker image vulnerability scanning.
+12. **DAST (OWASP ZAP)**: Baseline dynamic application security scan.
+13. **Security Quality Gate**: Enforces zero High/Critical unmitigated findings.
+14. **Artifacts Archival**: Uploads SARIF reports and compliance evidence.
 
 ---
 
-## 🚀 Running Locally
+## 📊 Project Deliverables & Artifacts Index
 
-### Option A: Standalone Local Development (No Docker Required)
+All project deliverables are located in their respective directories:
 
-#### 1. Backend Setup
+### 1. Excel Spreadsheets (`artifacts/excel/`)
+- `Requirements_Traceability.xlsx`: IEEE 29148 RTM linking FR-01..13 & SR-01..15 to test cases.
+- `Assets_CIA.xlsx`: CIA classification matrix for all 10 system assets.
+- `STRIDE_Threat_Matrix.xlsx`: STRIDE threat model with mitigations and residual ratings.
+- `Information_Flow.xlsx`: Data flow and trust boundary traversal matrix.
+- `Vulnerability_Analysis.xlsx`: CWE, OWASP Top 10, and CVSS v3.1 scoring for V-01..12.
+- `Threat_Risk_Register.xlsx`: Risk register with dynamic formulas and **5x5 Risk Heat Map** worksheet.
+- `Security_Controls.xlsx`: NIST SP 800-53 and ISO 27001 mappings for SC-01..15.
+- `Permission_Matrix.xlsx`: RBAC and DAC granular permission sharing matrices.
+- `Product_Backlog.xlsx`: 18 Jira user stories with story points and sprint allocations.
+- `Security_Test_Cases.xlsx`: 28 security test case specifications (SEC-TC-01..28).
+- `Burndown_Data.xlsx`: Sprints 1, 2, and 3 burndown metrics and tracking.
+- `Velocity_Data.xlsx`: Sprint velocity metrics showing 100% commitment delivery.
+- `Risk_Governance.xlsx`: Enterprise risk governance and compliance framework.
+- `Compliance_Mapping.xlsx`: Cross-regulatory mapping to OWASP, NIST CSF, ISO 27001, and GDPR.
+
+### 2. Architecture Diagrams (`artifacts/diagrams/`)
+- `Use_Case_Diagram` (`.drawio`, `.svg`, `.png`)
+- `ER_Diagram` (`.drawio`, `.svg`, `.png`)
+- `DFD_Level_0` (`.drawio`, `.svg`, `.png`)
+- `DFD_Level_1` (`.drawio`, `.svg`, `.png`)
+- `Trust_Boundary_Architecture` (`.drawio`, `.svg`, `.png`)
+- `Attack_Tree` (`.drawio`, `.svg`, `.png`)
+- `Secure_Architecture` (`.drawio`, `.svg`, `.png`)
+- `Risk_Heat_Map.png` (Matplotlib rendered 5x5 heatmap)
+- `Burndown_Chart.png` (Sprints 1, 2, 3 burndown curves)
+- `Velocity_Chart.png` (Team velocity bar chart)
+- `Sprint_Board.png` (Jira Scrum board graphic)
+
+### 3. IEEE Documentation (`docs/SRS/` and `docs/`)
+- `docs/SRS/SecureShare_SRS.docx` & `.pdf`: Full 20-clause IEEE 29148 Specification.
+- `docs/Use_Case_Specifications.docx` & `.pdf`: Detailed specifications for UC-01 through UC-12.
+- `docs/SecureShare_Final_Project_Report.docx` & `.pdf`: 46-section Academic Capstone Report.
+- `artifacts/ui/UI_Design_Specification.pdf`: Complete UI/UX design tokens and component specs.
+
+### 4. Jira Scrum Artifacts (`artifacts/jira/`)
+- `jira_import.csv`: Standard Jira issue import file.
+- `product_backlog.csv`: Full backlog with epics and story points.
+- `sprint_1.csv`, `sprint_2.csv`, `sprint_3.csv`: Sprint backlogs.
+- `bug_report.csv`: Tracked security defects and resolutions.
+
+### 5. Kubernetes Production Manifests (`k8s/`)
+- `namespace.yaml`, `configmap.yaml`, `secret.example.yaml`, `network-policy.yaml`, `ingress.yaml`, `hpa.yaml`.
+- Deployments & Services for `postgres`, `clamav`, `backend`, and `frontend`.
+
+---
+
+## 🧪 Running Automated Tests
+
+To execute the entire 48-test automated testing suite:
+
 ```powershell
-cd backend
-python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
-
-# Run database seeder (initializes tables, demo users, verified audit chain)
-python -m app.seed
-
-# Start FastAPI backend
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-API Documentation and Swagger UI will be live at: `http://127.0.0.1:8000/docs`
-
-#### 2. Frontend Setup
-In a second terminal:
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-Open web application at: `http://localhost:5173`
-
----
-
-### Option B: Docker Compose Deployment
-
-To launch the complete multi-container stack (PostgreSQL, MinIO S3, ClamAV daemon, Backend, and Frontend):
-
-```bash
-docker compose up --build
-```
-- Frontend UI: `http://localhost:80`
-- FastAPI REST API: `http://localhost:8000`
-- MinIO Web Console: `http://localhost:9001` (User: `secureshare_minio_user`, Pass: `secureshare_minio_secret_password`)
-- ClamAV Daemon: Port 3310
-
----
-
-## 🧪 Automated Testing
-
-Run the full pytest suite covering authentication, RBAC, file validation, quarantine, secure sharing, encryption at rest, and audit hash chain tamper detection:
-
-```powershell
-cd backend
-.\venv\Scripts\pytest -v
+# Run backend unit, security, and fuzzing suites:
+backend\venv\Scripts\pytest -v tests/security security/fuzzing backend/tests
 ```
 
-All 18 tests execute in an isolated test database with zero external dependencies.
-
----
-
-## 🛡️ DevSecOps Local Pipeline Execution
-
-Execute the standalone DevSecOps security scanner script:
-
-```powershell
-python scripts/run_security_pipeline.py
-```
-This performs SAST rule checks, scans dependencies, tests security headers, and records a verified run directly into the Admin SOC dashboard.
+**Results**: 48 passed, 0 failed (100% pass rate).

@@ -1,0 +1,19 @@
+Key,Type,Summary,Epic,Story Points,Priority,Sprint,Status,Assignee
+SEC-01,Story,Implement Argon2id user password hashing with salt,Authentication,5,Highest,Sprint 1,Done,Rahul Kumar
+SEC-02,Story,Build JWT authentication with sliding token refresh,Authentication,5,Highest,Sprint 1,Done,Rahul Kumar
+SEC-03,Story,Implement TOTP Multi-Factor Authentication with QR codes,Authentication,5,High,Sprint 1,Done,Rahul Kumar
+SEC-04,Story,Create multi-stage file upload with MIME magic detection,Threat Scanning,8,Highest,Sprint 1,Done,Priya Sharma
+SEC-05,Story,Integrate ClamAV daemon malware detection scanner,Threat Scanning,8,Highest,Sprint 1,Done,Priya Sharma
+SEC-06,Story,Build file quarantine isolation and admin purge API,Threat Scanning,5,High,Sprint 1,Done,Priya Sharma
+SEC-07,Story,Develop AES-256-GCM envelope encryption service,Cryptography,8,Highest,Sprint 2,Done,Rahul Kumar
+SEC-08,Story,Implement streaming decryption on authorized download,Cryptography,5,High,Sprint 2,Done,Rahul Kumar
+SEC-09,Story,Build folder hierarchy management with BOLA guard,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-10,Story,Implement granular user-to-user permission sharing,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-11,Story,Build expiring public share links with password protection,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-12,Story,Implement tamper-evident SHA-256 audit log blockchain,Audit & SOC,8,Highest,Sprint 2,Done,Sushmitha Reddy
+SEC-13,Story,Build SOC Admin Dashboard with quarantine & audit view,Audit & SOC,5,High,Sprint 3,Done,Sushmitha Reddy
+SEC-14,Story,Design modern React Tailwind frontend with glassmorphism,Frontend UI,8,High,Sprint 3,Done,Arjun Rao
+SEC-15,Story,Implement CI/CD GitHub Actions DevSecOps security gate,DevSecOps,8,Highest,Sprint 3,Done,Priya Sharma
+SEC-16,Task,Configure Kubernetes manifests with non-root securityContext,Deployment,5,Medium,Sprint 3,Done,Priya Sharma
+SEC-17,Task,Conduct OWASP ZAP automated baseline security scan,Security Validation,5,High,Sprint 3,Done,Priya Sharma
+SEC-18,Task,Develop comprehensive security fuzz testing suite,Security Validation,5,High,Sprint 3,Done,Priya Sharma

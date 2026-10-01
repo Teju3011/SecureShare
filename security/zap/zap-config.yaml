@@ -1,0 +1,28 @@
+# OWASP ZAP Baseline Scan Configuration for SecureShare
+# Format: <rule-id> <action> <regex>
+# Actions: IGNORE, INFO, LOW, MEDIUM, HIGH, OUTOFSCOPE
+
+# CSP Header missing / weak (Handled by Nginx reverse proxy in production)
+10038:
+  action: "INFO"
+  name: "Content Security Policy (CSP) Header Not Set"
+
+# Anti-clickjacking X-Frame-Options Header
+10020:
+  action: "INFO"
+  name: "X-Frame-Options Header Scanner"
+
+# Strict-Transport-Security (HSTS)
+10035:
+  action: "INFO"
+  name: "Strict-Transport-Security Header"
+
+# Server Leaks Version Information via "Server" HTTP Response Header Field
+10036:
+  action: "IGNORE"
+  name: "Server Leaks Information via Server Header"
+
+# X-Content-Type-Options Header Missing
+10021:
+  action: "INFO"
+  name: "X-Content-Type-Options Header Missing"

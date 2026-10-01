@@ -21,6 +21,7 @@ class File(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    folder_id = Column(Integer, ForeignKey("folders.id", ondelete="SET NULL"), nullable=True, index=True)
     original_filename = Column(String(255), nullable=False)
     stored_filename = Column(String(255), nullable=False, unique=True, index=True)
     file_size = Column(BigInteger, nullable=False)
@@ -32,12 +33,14 @@ class File(Base):
     storage_path = Column(String(512), nullable=False)
     is_quarantined = Column(Boolean, default=False, nullable=False, index=True)
     quarantine_reason = Column(Text, nullable=True)
+    encryption_status = Column(String(64), default="AES-256-GCM", nullable=False)
     encryption_iv = Column(String(64), nullable=False)  # 12-byte nonce hex for AES-256-GCM
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     owner = relationship("User", back_populates="files")
+    folder = relationship("Folder", back_populates="files")
     versions = relationship("FileVersion", back_populates="file", cascade="all, delete-orphan")
     scan_results = relationship("ScanResult", back_populates="file", cascade="all, delete-orphan")
     share_links = relationship("ShareLink", back_populates="file", cascade="all, delete-orphan")

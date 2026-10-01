@@ -1,0 +1,7 @@
+Key,Type,Summary,Epic,Story Points,Priority,Sprint,Status,Assignee
+SEC-07,Story,Develop AES-256-GCM envelope encryption service,Cryptography,8,Highest,Sprint 2,Done,Rahul Kumar
+SEC-08,Story,Implement streaming decryption on authorized download,Cryptography,5,High,Sprint 2,Done,Rahul Kumar
+SEC-09,Story,Build folder hierarchy management with BOLA guard,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-10,Story,Implement granular user-to-user permission sharing,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-11,Story,Build expiring public share links with password protection,Access Control,5,High,Sprint 2,Done,Arjun Rao
+SEC-12,Story,Implement tamper-evident SHA-256 audit log blockchain,Audit & SOC,8,Highest,Sprint 2,Done,Sushmitha Reddy

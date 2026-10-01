@@ -28,7 +28,12 @@ class LocalStorageProvider(BaseStorageProvider):
 
     def save_file(self, filename: str, data: bytes, is_quarantined: bool = False) -> str:
         safe_name = Path(filename).name
+        # Prevent OS MAX_PATH buffer overflow / filesystem length errors
+        if len(safe_name) > 100:
+            ext = "".join(Path(safe_name).suffixes)[-15:]
+            safe_name = safe_name[:64] + ext
         file_path = self._sanitize_path(safe_name, is_quarantined)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, "wb") as f:
             f.write(data)
         zone = "quarantine" if is_quarantined else "clean"

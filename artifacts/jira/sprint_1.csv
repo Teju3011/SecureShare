@@ -1,0 +1,7 @@
+Key,Type,Summary,Epic,Story Points,Priority,Sprint,Status,Assignee
+SEC-01,Story,Implement Argon2id user password hashing with salt,Authentication,5,Highest,Sprint 1,Done,Rahul Kumar
+SEC-02,Story,Build JWT authentication with sliding token refresh,Authentication,5,Highest,Sprint 1,Done,Rahul Kumar
+SEC-03,Story,Implement TOTP Multi-Factor Authentication with QR codes,Authentication,5,High,Sprint 1,Done,Rahul Kumar
+SEC-04,Story,Create multi-stage file upload with MIME magic detection,Threat Scanning,8,Highest,Sprint 1,Done,Priya Sharma
+SEC-05,Story,Integrate ClamAV daemon malware detection scanner,Threat Scanning,8,Highest,Sprint 1,Done,Priya Sharma
+SEC-06,Story,Build file quarantine isolation and admin purge API,Threat Scanning,5,High,Sprint 1,Done,Priya Sharma

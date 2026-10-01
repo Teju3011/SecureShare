@@ -67,6 +67,30 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
+  // Generic HTTP methods
+  get: async <T = any>(endpoint: string): Promise<{ data: T }> => {
+    const data = await request<T>(endpoint);
+    return { data };
+  },
+  post: async <T = any>(endpoint: string, data?: any): Promise<{ data: T }> => {
+    const resData = await request<T>(endpoint, {
+      method: 'POST',
+      body: data ? (data instanceof FormData ? data : JSON.stringify(data)) : undefined,
+    });
+    return { data: resData };
+  },
+  put: async <T = any>(endpoint: string, data?: any): Promise<{ data: T }> => {
+    const resData = await request<T>(endpoint, {
+      method: 'PUT',
+      body: data ? (data instanceof FormData ? data : JSON.stringify(data)) : undefined,
+    });
+    return { data: resData };
+  },
+  delete: async <T = any>(endpoint: string): Promise<{ data: T }> => {
+    const resData = await request<T>(endpoint, { method: 'DELETE' });
+    return { data: resData };
+  },
+
   // Auth
   login: (data: any) => request<any>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: any) => request<User>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),

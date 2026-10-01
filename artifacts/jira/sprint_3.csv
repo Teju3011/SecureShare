@@ -1,0 +1,7 @@
+Key,Type,Summary,Epic,Story Points,Priority,Sprint,Status,Assignee
+SEC-13,Story,Build SOC Admin Dashboard with quarantine & audit view,Audit & SOC,5,High,Sprint 3,Done,Sushmitha Reddy
+SEC-14,Story,Design modern React Tailwind frontend with glassmorphism,Frontend UI,8,High,Sprint 3,Done,Arjun Rao
+SEC-15,Story,Implement CI/CD GitHub Actions DevSecOps security gate,DevSecOps,8,Highest,Sprint 3,Done,Priya Sharma
+SEC-16,Task,Configure Kubernetes manifests with non-root securityContext,Deployment,5,Medium,Sprint 3,Done,Priya Sharma
+SEC-17,Task,Conduct OWASP ZAP automated baseline security scan,Security Validation,5,High,Sprint 3,Done,Priya Sharma
+SEC-18,Task,Develop comprehensive security fuzz testing suite,Security Validation,5,High,Sprint 3,Done,Priya Sharma

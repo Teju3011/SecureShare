@@ -68,3 +68,7 @@ def verify_audit_log_integrity(db: Session) -> Dict[str, Any]:
         "actual_hash": None,
         "message": f"All {len(logs)} audit log records verified intact. Cryptographic hash chain is valid."
     }
+
+
+# Alias for backward compatibility
+verify_hash_chain = verify_audit_log_integrity

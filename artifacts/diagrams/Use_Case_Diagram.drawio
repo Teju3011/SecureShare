@@ -1,0 +1,36 @@
+<mxfile host="app.diagrams.net" modified="2026-10-01T00:00:00.000Z" agent="SecureShare Architect" version="21.0.0" type="device">
+  <diagram id="Use_Case_Diagram" name="Use_Case_Diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="2" value="Regular User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#E2E8F0;strokeColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="System Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FEE2E2;strokeColor=#DC2626;" vertex="1" parent="1">
+          <mxGeometry x="960" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="SecureShare System Boundary" style="shape=rect;html=1;whiteSpace=wrap;fillColor=#F8FAFC;strokeColor=#1F4E79;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="220" y="80" width="660" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="UC-01: Argon2id Registration" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="140" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="UC-04: 6-Stage Malware Scanner" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="140" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="UC-05: AES-256-GCM Encryption" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="250" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="UC-10: SHA-256 Audit Verification" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="250" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="UC-11: Admin Quarantine Purge" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="370" width="220" height="60" as="geometry" />
+        </mxCell>
+    
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

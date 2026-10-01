@@ -20,6 +20,7 @@ router = APIRouter(prefix="/shares", tags=["Secure File Sharing"])
 
 
 @router.post("/create", response_model=ShareCreateResponse)
+@router.post("", response_model=ShareCreateResponse)
 def create_share(
     req: ShareCreateRequest,
     request: Request,
@@ -108,6 +109,11 @@ def revoke_share(
 
 @router.get(
     "/public/{token}/info",
+    response_model=SharePublicInfoResponse,
+    dependencies=[Depends(rate_limit_check("share_info", max_requests=60, window_seconds=60))]
+)
+@router.get(
+    "/public/{token}",
     response_model=SharePublicInfoResponse,
     dependencies=[Depends(rate_limit_check("share_info", max_requests=60, window_seconds=60))]
 )

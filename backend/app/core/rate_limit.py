@@ -1,3 +1,4 @@
+import os
 import time
 from collections import defaultdict
 from threading import Lock
@@ -24,12 +25,18 @@ class InMemoryRateLimiter:
             self._requests[key].append(now)
             return False, 0
 
+    def reset(self):
+        with self._lock:
+            self._requests.clear()
+
 
 limiter = InMemoryRateLimiter()
 
 
 def rate_limit_check(key_prefix: str, max_requests: int = 30, window_seconds: int = 60):
     async def dependency(request: Request):
+        if os.getenv("ENVIRONMENT") == "testing" and os.getenv("ENABLE_TEST_RATE_LIMIT") != "true":
+            return
         client_ip = request.client.host if request.client else "unknown"
         key = f"{key_prefix}:{client_ip}"
         limited, retry_after = limiter.is_rate_limited(key, max_requests, window_seconds)

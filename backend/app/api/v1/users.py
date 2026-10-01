@@ -9,7 +9,14 @@ from app.models.audit import AuditLog
 from app.schemas.admin import UserDashboardStats
 from app.schemas.audit import AuditLogResponse
 
+from app.schemas.user import UserResponse
+
 router = APIRouter(prefix="/users", tags=["User Dashboard & Activity"])
+
+
+@router.get("/me", response_model=UserResponse)
+def get_current_user_profile(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/dashboard", response_model=UserDashboardStats)

@@ -24,6 +24,7 @@ router = APIRouter(prefix="/admin", tags=["Admin & SOC Security Operations"])
 
 
 @router.get("/dashboard/stats", response_model=AdminDashboardStats)
+@router.get("/stats", response_model=AdminDashboardStats)
 def get_dashboard_stats(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
@@ -268,6 +269,7 @@ def release_quarantined_file(
 
 
 @router.delete("/quarantine/{file_id}")
+@router.delete("/quarantine/{file_id}/purge")
 def purge_quarantined_file(
     file_id: int,
     request: Request,

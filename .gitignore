@@ -42,6 +42,8 @@ storage_data/
 backend/storage_data/
 backend/test_storage_data/
 test_storage_data/
+test_storage_data_root/
+test_secureshare_root.db
 uploads/
 quarantine/
 
