@@ -27,7 +27,7 @@ def main():
     print("SECURESHARE DEVSECOPS SECURITY PIPELINE")
     print("=" * 60)
 
-    commit_hash = hashlib.sha1(f"{datetime.utcnow().isoformat()}-{random.random()}".encode()).hexdigest()[:8]
+    commit_hash = hashlib.sha256(f"{datetime.utcnow().isoformat()}-{random.random()}".encode()).hexdigest()[:8]
     branch = "main"
     triggered_by = "devsecops-pipeline@secureshare.io"
 

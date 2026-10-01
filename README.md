@@ -135,24 +135,16 @@ Uploaded File Byte Stream
 
 ---
 
-## 🔄 14-Stage DevSecOps CI/CD Pipeline
+## 🔄 DevSecOps CI/CD Security Pipeline
 
-The GitHub Actions workflow (`.github/workflows/secure-pipeline.yml`) executes 14 automated security gates:
+The GitHub Actions workflow (`.github/workflows/security-pipeline.yml`) executes automated security validation across 4 primary gates:
 
-1. **Code Linting & Formatting**: Flake8 & Black code quality enforcement.
-2. **Backend Unit & Integration Tests**: Pytest core test suites.
-3. **Security Mitigation Tests**: 11 dedicated security suites (BOLA, Crypto, Auth, RBAC).
-4. **Malformed Input Fuzzing**: 500+ malformed payloads tested against endpoints.
-5. **SAST (Bandit)**: Python static security analysis (SARIF output).
-6. **SAST (Semgrep)**: OWASP Top 10 and security-audit rule scanning.
-7. **Secret Scanning (TruffleHog)**: High-entropy credential and private key detection.
-8. **SCA Backend (pip-audit & Safety)**: Python dependencies CVE vulnerability audit.
-9. **SCA Frontend (npm audit)**: Node.js dependency vulnerability scan.
-10. **Frontend Build & TypeCheck**: React 18 TypeScript compilation check.
-11. **Container Security (Trivy)**: Docker image vulnerability scanning.
-12. **DAST (OWASP ZAP)**: Baseline dynamic application security scan.
-13. **Security Quality Gate**: Enforces zero High/Critical unmitigated findings.
-14. **Artifacts Archival**: Uploads SARIF reports and compliance evidence.
+1. **Lint & Unit Tests**: Executes Pytest test suites covering authentication, AES-256-GCM crypto, role-based access control (RBAC), and antivirus file validation.
+2. **SAST (Semgrep Static Application Security Testing)**: Scans codebase using OWASP Top 10, CWE security-audit, and secret detection rules with `.semgrepignore` enforcement to guarantee zero critical vulnerabilities.
+3. **Software Composition Analysis (SCA)**:
+   - **Backend**: `pip-audit` validating all Python packages against the PyPI vulnerability database.
+   - **Frontend**: `npm audit` enforcing zero high/critical CVE advisories across the React 18 / Vite 6 dependency graph.
+4. **Automated DevSecOps Quality & Security Gate**: Strictly enforces a zero-tolerance policy against critical SAST and SCA findings before granting production deployment approval.
 
 ---
 

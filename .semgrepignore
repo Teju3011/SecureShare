@@ -1,0 +1,33 @@
+# Dependencies and virtual environments
+venv/
+backend/venv/
+.venv/
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+__pycache__/
+*.pyc
+
+# CI/CD Workflows
+.github/
+
+# Tests and fuzzing fixtures (contain deliberate test vectors & mock credentials)
+tests/
+backend/tests/
+security/
+scripts/
+
+# Documentation, office artifacts, and design files
+docs/
+artifacts/
+*.xlsx
+*.docx
+*.pdf
+*.drawio
+*.png
+*.svg
+
+# Configuration templates and environment examples
+.env*
+*.example

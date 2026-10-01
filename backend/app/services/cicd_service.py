@@ -35,7 +35,7 @@ class CicdService:
         3. OWASP ZAP DAST
         Applies Security Gate: Critical finding -> BLOCKED; otherwise -> PASSED
         """
-        commit_hash = hashlib.sha1(f"{datetime.utcnow().isoformat()}-{random.random()}".encode()).hexdigest()[:8]
+        commit_hash = hashlib.sha256(f"{datetime.utcnow().isoformat()}-{random.random()}".encode()).hexdigest()[:8]
         start_time = datetime.utcnow()
 
         pipeline_run = PipelineRun(
